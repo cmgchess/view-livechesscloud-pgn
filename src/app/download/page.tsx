@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function TournamentDownload() {
   const [tournamentId, setTournamentId] = useState('');
@@ -46,7 +47,8 @@ export default function TournamentDownload() {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Download Pgn From view.livechesscloud
       </h2>
-      <div className="mb-4 w-full max-w-md">
+      <Image src={'/help.webp'} alt='Help' unoptimized width={500} height={140}/>
+      <div className="mt-2 mb-4 w-full max-w-md">
         <label className="block text-gray-700">Tournament ID:</label>
         <input
           type="text"
