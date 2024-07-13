@@ -34,7 +34,7 @@ export async function GET(
     const response = new NextResponse(pgns);
     response.headers.set(
       'Content-disposition',
-      `attachment; filename=${tournament.id}-R${round}.pgn`
+      `attachment; filename=${params.id}-R${round}.pgn`
     );
     response.headers.set('Content-type', 'text/plain');
     return response;

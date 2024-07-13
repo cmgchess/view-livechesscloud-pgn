@@ -32,7 +32,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const response = new NextResponse(pgns);
     response.headers.set(
       'Content-disposition',
-      `attachment; filename=${tournament.id}.pgn`
+      `attachment; filename=${params.id}.pgn`
     );
     response.headers.set('Content-type', 'text/plain');
     return response;

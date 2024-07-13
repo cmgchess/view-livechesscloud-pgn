@@ -32,7 +32,7 @@ export default function TournamentDownload() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = `${fileName}.pgn`;
+      a.download = `${fileName}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
