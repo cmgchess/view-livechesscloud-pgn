@@ -30,10 +30,9 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       lookupMap
     );
     const response = new NextResponse(pgns);
-    const tournamentId = Buffer.from('tournament', 'utf-8').toString();
     response.headers.set(
       'Content-disposition',
-      `attachment; filename=${tournamentId}.pgn`
+      `attachment; filename=${params.id}.pgn`
     );
     response.headers.set('Content-type', 'text/plain');
     return response;
