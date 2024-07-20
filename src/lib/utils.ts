@@ -97,8 +97,8 @@ function getFormattedMoves(moves: string[]): string {
 }
 
 function getPlayerFullName(player: Player): string {
-  const full = `${player.lname || ''}, ${player.fname || ''} ${
-    player.mname || ''
+  const full = `${player?.lname ?? ''}, ${player?.fname ?? ''} ${
+    player?.mname ?? ''
   }`;
   return full.trim() === ',' ? '?' : full;
 }
