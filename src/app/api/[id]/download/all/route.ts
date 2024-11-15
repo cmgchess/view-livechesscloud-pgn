@@ -7,6 +7,7 @@ import {
   getExtendedGamesUrls,
   getGamesData,
   generatePgn,
+  getIndexMap,
 } from '@/lib/utils';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
@@ -14,17 +15,17 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const tournament = await fetchTournament(params.id);
     const roundsWithGames = getRoundsWithGames(tournament.rounds);
     const indexData = await fetchIndexData(params.id, roundsWithGames);
-
+    const indexMap = getIndexMap(indexData, roundsWithGames);
     const extendedGamesUrls = getExtendedGamesUrls(
       params.id,
       roundsWithGames,
-      indexData
+      indexMap
     );
     const lookupMap = createGameLookupMap(extendedGamesUrls);
     const gamesData = await getGamesData(extendedGamesUrls);
     const pgns = generatePgn(
       tournament,
-      indexData,
+      indexMap,
       gamesData,
       extendedGamesUrls,
       lookupMap

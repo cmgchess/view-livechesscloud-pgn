@@ -18,16 +18,14 @@ export async function GET(
     const round = validateNumber(params.round);
     const game = validateNumber(params.game);
     const indexData = await fetchIndexData(params.id, [round]);
-    const extendedGamesUrls = getExtendedGamesUrls(
-      params.id,
-      [round],
-      indexData
-    ).filter((g) => g.game === game);
+    const extendedGamesUrls = getExtendedGamesUrls(params.id, [round], {
+      [round]: indexData[0],
+    }).filter((g) => g.game === game);
     const lookupMap = createGameLookupMap(extendedGamesUrls);
     const gamesData = await getGamesData(extendedGamesUrls);
     const pgns = generatePgn(
       tournament,
-      indexData,
+      { [round]: indexData[0] },
       gamesData,
       extendedGamesUrls,
       lookupMap
