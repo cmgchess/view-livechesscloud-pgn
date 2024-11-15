@@ -1,78 +1,12 @@
 import {
   Game,
   GameResult,
+  Index,
   Pairing,
   Player,
   Tournament,
-  Round,
-  Index,
 } from '@/types/dgt';
 import { ExtendedGameUrl, LookupMap } from '@/types/utility';
-
-export function getTourneyUrl(id: string): string {
-  return `https://1.pool.livechesscloud.com/get/${id}/tournament.json`;
-}
-
-export function getIndexUrl(id: string, round: number): string {
-  return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/index.json`;
-}
-
-export function getGameUrl(id: string, round: number, game: number): string {
-  return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/game-${game}.json?poll`;
-}
-
-export function validateNumber(strNum: string): number {
-  const num = parseInt(strNum);
-  if (isNaN(num) || num <= 0) throw new Error();
-  return num;
-}
-
-export async function fetchTournament(id: string): Promise<Tournament> {
-  const tournamentRes = await fetch(getTourneyUrl(id));
-  return await tournamentRes.json();
-}
-
-export async function fetchIndexData(
-  id: string,
-  rounds: number[]
-): Promise<Index[]> {
-  const indexPromises = rounds.map((round) => fetch(getIndexUrl(id, round)));
-  const indexResponses = await Promise.all(indexPromises);
-  return await Promise.all(indexResponses.map((prom) => prom.json()));
-}
-
-export async function getGamesData(
-  games: ExtendedGameUrl[]
-): Promise<PromiseSettledResult<Game>[]> {
-  const gamesPromises = games.map((game) =>
-    fetch(game.url, { cache: 'no-store' })
-  );
-  const gamesResponses = await Promise.all(gamesPromises);
-  return await Promise.allSettled(gamesResponses.map((prom) => prom.json()));
-}
-
-export function getExtendedGamesUrls(
-  id: string,
-  roundsWithGames: number[],
-  indexMap: Record<number, Index>
-) {
-  return roundsWithGames.flatMap((round) => {
-    return Array.from({ length: indexMap[round].pairings.length }, (_, i) => {
-      return {
-        url: getGameUrl(id, round, i + 1),
-        round: round,
-        game: i + 1,
-      };
-    });
-  });
-}
-
-export function getIndexMap(indexData: Index[], rounds: number[]) {
-  return indexData.reduce<Record<number, Index>>((acc, curr, idx) => {
-    acc[rounds[idx]] = curr;
-    return acc;
-  }, {});
-}
 
 function getGameResult(code: GameResult): string {
   switch (code) {
@@ -139,23 +73,6 @@ export function parseToPgn(
   pgn += getFormattedMoves(game.moves);
   pgn += ` ${result}`;
   return pgn;
-}
-
-export function createGameLookupMap(games: ExtendedGameUrl[]) {
-  return games.reduce((acc: LookupMap, curr) => {
-    acc[curr.url] = {
-      round: curr.round,
-      game: curr.game,
-    };
-    return acc;
-  }, {});
-}
-
-export function getRoundsWithGames(rounds: Round[]) {
-  return rounds.reduce((acc: number[], curr, idx) => {
-    if (curr.count > 0) acc.push(idx + 1);
-    return acc;
-  }, []);
 }
 
 export function generatePgn(

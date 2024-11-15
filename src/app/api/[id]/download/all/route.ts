@@ -2,13 +2,11 @@ import { NextResponse } from 'next/server';
 import {
   createGameLookupMap,
   getRoundsWithGames,
-  fetchTournament,
-  fetchIndexData,
   getExtendedGamesUrls,
-  getGamesData,
-  generatePgn,
   getIndexMap,
-} from '@/lib/utils';
+} from '@/utils/event';
+import { fetchTournament, fetchIndexData, getGamesData } from '@/utils/api';
+import { generatePgn } from '@/utils/game';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {

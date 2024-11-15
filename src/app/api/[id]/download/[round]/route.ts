@@ -1,12 +1,7 @@
-import {
-  createGameLookupMap,
-  fetchIndexData,
-  fetchTournament,
-  generatePgn,
-  getExtendedGamesUrls,
-  getGamesData,
-  validateNumber,
-} from '@/lib/utils';
+import { fetchTournament, fetchIndexData, getGamesData } from '@/utils/api';
+import { generatePgn } from '@/utils/game';
+import { createGameLookupMap, getExtendedGamesUrls } from '@/utils/event';
+import { validateNumber } from '@/utils/validators';
 import { NextResponse } from 'next/server';
 
 export async function GET(
