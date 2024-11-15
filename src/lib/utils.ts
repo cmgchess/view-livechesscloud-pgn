@@ -54,10 +54,10 @@ export async function getGamesData(
 export function getExtendedGamesUrls(
   id: string,
   roundsWithGames: number[],
-  indexData: Index[]
+  indexMap: Record<number, Index>
 ) {
-  return roundsWithGames.flatMap((round, rndIdx) => {
-    return Array.from({ length: indexData[rndIdx].pairings.length }, (_, i) => {
+  return roundsWithGames.flatMap((round) => {
+    return Array.from({ length: indexMap[round].pairings.length }, (_, i) => {
       return {
         url: getGameUrl(id, round, i + 1),
         round: round,
@@ -65,6 +65,13 @@ export function getExtendedGamesUrls(
       };
     });
   });
+}
+
+export function getIndexMap(indexData: Index[], rounds: number[]) {
+  return indexData.reduce<Record<number, Index>>((acc, curr, idx) => {
+    acc[rounds[idx]] = curr;
+    return acc;
+  }, {});
 }
 
 function getGameResult(code: GameResult): string {
@@ -153,7 +160,7 @@ export function getRoundsWithGames(rounds: Round[]) {
 
 export function generatePgn(
   tournament: Tournament,
-  indexData: Index[],
+  indexMap: Record<number, Index>,
   gamesData: PromiseSettledResult<Game>[],
   extendedGamesUrls: ExtendedGameUrl[],
   lookupMap: LookupMap
@@ -162,7 +169,7 @@ export function generatePgn(
     .reduce((acc: string[], curr, idx) => {
       if (curr.status !== 'fulfilled') return acc;
       const rndAndGame = lookupMap[extendedGamesUrls[idx].url];
-      const index = indexData[rndAndGame.round - 1] || indexData[0];
+      const index = indexMap[rndAndGame.round];
       const pairing = index.pairings[rndAndGame.game - 1];
       const pgn = parseToPgn(
         tournament,
