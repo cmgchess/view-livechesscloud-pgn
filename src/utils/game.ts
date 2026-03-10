@@ -25,16 +25,61 @@ function convertDateFormat(inputDate: string): string {
   return inputDate.split('-').join('.');
 }
 
-function getFormattedMoves(moves: string[]): string {
+//FG
+function formatSecondsToHMS(secondsStr: string): string {
+  const total = Number(secondsStr);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  return `${hours}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+}
+
+
+/**
+ * getFormattedMoves
+ *
+ * Returns the list of chess moves in a formatted string.  
+ * Modified to also include:
+ *  - EMT (Elapsed Move Time): the amount of time a player spent on each move.  
+ *  - CLK (Clock): the remaining time on the player’s clock after the move.  
+ *
+ * This enhancement allows moves to be displayed together with timing information,
+ * making it easier to analyze both the sequence of play and the players’ time management.
+ */
+function getFormattedMoves(moves: string[], includeEMT: boolean = true, includeClkAttr: boolean = true, includeClkComment: boolean = true): string {
   let str = '';
+
   for (let i = 0; i < moves.length; i++) {
-    if (i % 2 == 0) {
-      str += `${Math.ceil((i + 1) / 2).toString()}. `;
+    // Numero mossa
+    if (i % 2 === 0) {
+      str += `${Math.ceil((i + 1) / 2)}. `;
     }
-    str += `${moves[i].split(' ')[0]} `;
+
+    const parts = moves[i].split(' ');
+    const move = parts[0];
+    let emt = '';
+    let clk = '';
+
+    if (parts[1]) {
+      if (parts[1].includes('+')) {
+        const [clkPart, emtPart] = parts[1].split('+');
+        clk = clkPart;
+        emt = emtPart;
+      } else {
+        // solo un numero: assumiamo sia clk
+        clk = parts[1];
+      }
+    }
+
+    let comment = '';
+    if (includeEMT && emt) comment += `[%emt ${formatSecondsToHMS(emt)}]`;
+    if (includeClkAttr && clk) comment += `[%clk ${formatSecondsToHMS(clk)}]`;
+    if (includeClkComment && clk) comment += `${formatSecondsToHMS(clk)}`;
+
+    str += `${move}${comment ? ` {${comment}}` : ''} `;
   }
-  str = str.trim();
-  return str;
+
+  return str.trim();
 }
 
 function getPlayerFullName(player: Player): string {
@@ -49,7 +94,10 @@ export function parseToPgn(
   pairing: Pairing,
   game: Game,
   round: number,
-  date: string
+  date: string,
+  includeEMT: boolean = true,
+  includeClkAttr: boolean = true,
+  includeClkComment: boolean = true
 ): string {
   const event = tournament.name || '?';
   const site = tournament.location || '?';
@@ -70,7 +118,7 @@ export function parseToPgn(
   ].join('\n');
   let pgn = meta;
   pgn += '\n\n';
-  pgn += getFormattedMoves(game.moves);
+  pgn += getFormattedMoves(game.moves, includeEMT, includeClkAttr, includeClkComment);
   pgn += ` ${result}`;
   return pgn;
 }
@@ -80,7 +128,10 @@ export function generatePgn(
   indexMap: Record<number, Index>,
   gamesData: PromiseSettledResult<Game>[],
   extendedGamesUrls: ExtendedGameUrl[],
-  lookupMap: LookupMap
+  lookupMap: LookupMap,
+  includeEMT: boolean = true,
+  includeClkAttr: boolean = true,
+  includeClkComment: boolean = true
 ): string {
   const pgn = gamesData
     .reduce((acc: string[], curr, idx) => {
@@ -93,7 +144,10 @@ export function generatePgn(
         pairing,
         curr.value,
         rndAndGame.round,
-        index.date
+        index.date,
+        includeEMT,
+        includeClkAttr,
+        includeClkComment
       );
       acc.push(pgn);
       return acc;
