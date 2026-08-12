@@ -10,6 +10,10 @@ export default function TournamentDownload() {
   const [downloadGame, setDownloadGame] = useState(false);
   const [gameId, setGameId] = useState<number | ''>('');
 
+  const [includeEMT, setIncludeEMT] = useState(false);
+  const [includeClkAttr, setIncludeClkAttr] = useState(false);
+  const [includeClkComment, setIncludeClkComment] = useState(false);
+
   async function handleDownload() {
     if (!tournamentId.trim()) return;
 
@@ -22,8 +26,13 @@ export default function TournamentDownload() {
         url += `/${gameId}`;
       }
     }
+    url += `?includeEMT=${includeEMT}&includeClkAttr=${includeClkAttr}&includeClkComment=${includeClkComment}`;
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        cache: 'no-store',
+        next: { revalidate: 0 },
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' },
+      });
       if (!response.ok) {
         throw new Error();
       }
@@ -125,6 +134,37 @@ export default function TournamentDownload() {
           </div>
         )}
       </div>
+      <div className="mb-4 w-full max-w-md">
+        <fieldset style={{ border: "1px solid #ccc", padding: "1rem" }}>
+          <legend>Move formatting options</legend>
+
+          <label className="block text-gray-700">
+            <input
+              type="checkbox"
+              checked={includeEMT}
+              onChange={(e) => setIncludeEMT(e.target.checked)}
+            /> <strong>Include EMT (Elapsed Move Time)</strong>: the amount of time a player spent on each move.
+          </label>
+
+          <label className="block text-gray-700">
+            <input
+              type="checkbox"
+              checked={includeClkAttr}
+              onChange={(e) => setIncludeClkAttr(e.target.checked)}
+            /> <strong>Include CLK (Clock) as Attribute</strong>: the remaining time on the player’s clock after the move.
+          </label>
+
+          <label className="block text-gray-700">
+            <input
+              type="checkbox"
+              checked={includeClkComment}
+              onChange={(e) => setIncludeClkComment(e.target.checked)}
+            /> <strong>Include CLK (Clock) as Comment</strong>: the remaining time on the player’s clock after the move.
+          </label>
+        </fieldset>
+      </div>
+
+
       <button
         onClick={handleDownload}
         className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
